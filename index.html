@@ -275,14 +275,26 @@ li{font-size:14px;color:#999;margin:4px 0}
 
       <h3>방법 1 — ZIP 파일로 받기 (초보자 추천)</h3>
       <ol>
-        <li>아래 GitHub 링크를 엽니다</li>
-        <li>초록색 <b style="color:#39ff14">Code</b> 버튼을 클릭합니다</li>
-        <li><b style="color:#ddd">Download ZIP</b> 을 클릭합니다</li>
-        <li>다운로드된 ZIP 파일을 더블클릭해서 압축을 풉니다</li>
-        <li>압축 풀린 폴더를 바탕화면에 놔두면 됩니다</li>
+        <li>아래 버튼을 클릭합니다 → 자동으로 ZIP 파일이 다운로드됩니다</li>
       </ol>
-      <div class="img-desc"><span>📂</span>다운로드된 폴더 안에 <b>app</b> 폴더와 <b>server</b> 폴더가 있어야 해요</div>
-      <a href="https://github.com/jeonju0-ai/seednote-lite/archive/refs/heads/main.zip" class="link-btn" target="_blank">📦 ZIP 파일 직접 다운로드</a>
+      <a href="https://github.com/jeonju0-ai/seednote-lite/archive/refs/heads/main.zip" class="link-btn primary" style="margin-bottom:12px">📦 ZIP 파일 다운로드</a>
+      <ol start="2">
+        <li>다운로드 폴더에서 ZIP 파일을 찾아 압축을 풉니다</li>
+      </ol>
+      <div class="info-box" style="margin-top:0">
+        <b>압축 푸는 법</b><br>
+        🍎 Mac: ZIP 파일을 <b style="color:#ddd">더블클릭</b>하면 자동으로 압축이 풀려요<br>
+        🪟 Windows: ZIP 파일에서 <b style="color:#ddd">마우스 오른쪽 클릭 → "모두 압축 풀기"</b> 클릭
+      </div>
+      <ol start="3">
+        <li>압축이 풀리면 <b style="color:#a78bfa">seednote-lite-main</b> 폴더가 생겨요</li>
+        <li>이 폴더를 바탕화면으로 옮겨두세요</li>
+      </ol>
+      <div class="info-box yellow">
+        폴더 이름이 <code style="color:#f59e0b">seednote-lite-main</code> 인 게 정상이에요.<br>
+        아래 4단계에서 이 이름을 그대로 사용합니다.
+      </div>
+      <div class="img-desc"><span>📂</span>폴더 안에 <b>app</b> 폴더와 <b>server</b> 폴더가 있어야 해요</div>
 
       <div class="divider"></div>
 
@@ -344,13 +356,14 @@ li{font-size:14px;color:#999;margin:4px 0}
         <h3>② 다운받은 폴더로 이동하기</h3>
         <p>바탕화면에 저장한 경우 아래 명령어를 복사해서 터미널에 붙여넣으세요.</p>
         <div class="code-block">
-          <pre id="code-mac-cd">cd ~/Desktop/seednote-lite/server</pre>
+          <pre id="code-mac-cd">cd ~/Desktop/seednote-lite-main/server</pre>
           <button class="copy-btn" onclick="copyCode('code-mac-cd',this)">복사</button>
         </div>
-        <div class="info-box yellow">
-          <b>폴더 이름이 다르다면?</b><br>
-          예를 들어 폴더 이름이 <code style="color:#f59e0b">seednote-lite-main</code> 이라면<br>
-          <code style="color:#f59e0b">cd ~/Desktop/seednote-lite-main/server</code> 로 바꿔서 입력하세요.
+        <div class="info-box" style="margin-top:8px">
+          <b>터미널에 붙여넣는 법</b><br>
+          복사 버튼을 누른 뒤 터미널 창을 클릭하고<br>
+          키보드에서 <b style="color:#ddd">Command(⌘) + V</b> 를 누르면 붙여넣기가 됩니다.<br>
+          그 다음 <b style="color:#ddd">엔터</b> 를 누르면 실행돼요.
         </div>
 
         <h3>③ 필요한 도구 설치 (최초 1회)</h3>
@@ -371,7 +384,18 @@ li{font-size:14px;color:#999;margin:4px 0}
           http://localhost:3456<br>
           저장 경로: /Users/.../Obsidian Vault/0.Inbox
         </div>
-        <p>이 창을 닫지 마세요! 서버는 계속 켜져 있어야 합니다.</p>
+        <div class="info-box yellow">
+          <b>이 창을 닫지 마세요!</b> 서버가 꺼지면 폰에서 저장이 안 돼요.<br>
+          폰으로 메모할 때는 항상 이 창이 열려 있어야 합니다.
+        </div>
+        <div class="info-box" style="margin-top:8px">
+          <b>컴퓨터를 껐다 켰다면?</b><br>
+          터미널을 다시 열고 아래 명령어를 실행하면 돼요:
+          <div class="code-block" style="margin:8px 0 0">
+            <pre id="code-mac-restart">cd ~/Desktop/seednote-lite-main/server && node server.js</pre>
+            <button class="copy-btn" onclick="copyCode('code-mac-restart',this)">복사</button>
+          </div>
+        </div>
       </div>
 
       <!-- Windows 섹션 -->
@@ -379,16 +403,23 @@ li{font-size:14px;color:#999;margin:4px 0}
         <h3>① 명령 프롬프트 열기</h3>
         <ol>
           <li>키보드에서 <b style="color:#ddd">Windows 키 + R</b> 을 동시에 누릅니다</li>
-          <li>실행 창에 <b style="color:#a78bfa">cmd</b> 를 입력하고 엔터를 누릅니다</li>
+          <li>작은 창이 뜨면 <b style="color:#a78bfa">cmd</b> 를 입력하고 엔터를 누릅니다</li>
           <li>검은 창이 뜨면 성공!</li>
         </ol>
         <div class="img-desc"><span>⬛</span>이런 검은 창이 뜨면 명령 프롬프트가 열린 거예요</div>
 
         <h3>② 다운받은 폴더로 이동하기</h3>
-        <p>바탕화면에 저장한 경우 아래 명령어를 복사해서 붙여넣으세요.</p>
+        <p>바탕화면에 저장한 경우 아래 명령어를 복사하세요.</p>
         <div class="code-block">
-          <pre id="code-win-cd">cd %USERPROFILE%\Desktop\seednote-lite\server</pre>
+          <pre id="code-win-cd">cd %USERPROFILE%\Desktop\seednote-lite-main\server</pre>
           <button class="copy-btn" onclick="copyCode('code-win-cd',this)">복사</button>
+        </div>
+        <div class="info-box" style="margin-top:8px">
+          <b>명령 프롬프트에 붙여넣는 법</b><br>
+          복사 버튼을 누른 뒤 검은 창 안에서<br>
+          <b style="color:#ddd">마우스 오른쪽 클릭</b> 을 하면 바로 붙여넣기가 됩니다.<br>
+          (Windows cmd에서는 Ctrl+V가 안 돼요. 오른쪽 클릭!)<br>
+          그 다음 <b style="color:#ddd">엔터</b> 를 누르면 실행돼요.
         </div>
 
         <h3>③ 필요한 도구 설치 (최초 1회)</h3>
@@ -396,6 +427,7 @@ li{font-size:14px;color:#999;margin:4px 0}
           <pre id="code-win-npm">npm install</pre>
           <button class="copy-btn" onclick="copyCode('code-win-npm',this)">복사</button>
         </div>
+        <p>완료되면 이런 문구가 나와요: <code style="color:#39ff14">added XX packages</code></p>
 
         <h3>④ 서버 실행하기</h3>
         <div class="code-block">
@@ -403,7 +435,26 @@ li{font-size:14px;color:#999;margin:4px 0}
           <button class="copy-btn" onclick="copyCode('code-win-run',this)">복사</button>
         </div>
         <div class="info-box green">
-          성공하면: <code style="color:#39ff14">씨앗노트 서버 실행 중 http://localhost:3456</code> 이 나와요
+          <b>성공하면 이런 문구가 나와요:</b><br>
+          씨앗노트 서버 실행 중<br>
+          http://localhost:3456<br>
+          저장 경로: C:\Users\...\Obsidian Vault\0.Inbox
+        </div>
+        <div class="info-box yellow">
+          <b>이 창을 닫지 마세요!</b> 서버가 꺼지면 폰에서 저장이 안 돼요.<br>
+          폰으로 메모할 때는 항상 이 창이 열려 있어야 합니다.
+        </div>
+        <div class="info-box" style="margin-top:8px">
+          <b>컴퓨터를 껐다 켰다면?</b><br>
+          명령 프롬프트를 다시 열고 아래 두 줄을 차례로 실행하세요:
+          <div class="code-block" style="margin:8px 0 4px">
+            <pre id="code-win-restart1">cd %USERPROFILE%\Desktop\seednote-lite-main\server</pre>
+            <button class="copy-btn" onclick="copyCode('code-win-restart1',this)">복사</button>
+          </div>
+          <div class="code-block" style="margin:4px 0 0">
+            <pre id="code-win-restart2">node server.js</pre>
+            <button class="copy-btn" onclick="copyCode('code-win-restart2',this)">복사</button>
+          </div>
         </div>
       </div>
 
@@ -640,9 +691,8 @@ li{font-size:14px;color:#999;margin:4px 0}
     <details class="faq-item">
       <summary>컴퓨터를 껐다 켜면 다시 설정해야 하나요?</summary>
       <p>
-        서버는 다시 실행해야 해요. 터미널에서<br>
-        <code style="color:#39ff14">cd ~/Desktop/seednote-lite/server && node server.js</code><br>
-        를 실행하면 돼요. 앱 설정은 저장되어 있어서 다시 입력하지 않아도 됩니다.
+        서버는 다시 실행해야 해요. 4단계 맨 아래에 재실행 명령어가 있어요.<br>
+        앱 설정(서버 주소)은 저장되어 있어서 다시 입력하지 않아도 됩니다.
       </p>
     </details>
 
