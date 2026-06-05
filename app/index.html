@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f0f0f" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>씨앗노트</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      max-width: 480px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    /* 헤더 */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid #1e1e1e;
+    }
+    .logo { font-size: 18px; font-weight: 700; color: #a78bfa; }
+    .logo span { color: #39ff14; }
+    .settings-btn {
+      background: none; border: none; color: #444;
+      font-size: 20px; cursor: pointer; padding: 4px;
+    }
+
+    /* 메인 */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 20px 20px;
+      gap: 16px;
+      overflow: hidden;
+    }
+
+    /* 텍스트 입력 */
+    textarea {
+      flex: 1;
+      background: #1a1a1a;
+      border: 1px solid #222;
+      border-radius: 16px;
+      color: #fff;
+      font-size: 17px;
+      line-height: 1.6;
+      padding: 16px;
+      resize: none;
+      outline: none;
+      font-family: inherit;
+    }
+    textarea::placeholder { color: #444; }
+    textarea:focus { border-color: #7c3aed; }
+
+    /* 버튼 영역 */
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* 음성 버튼 */
+    .voice-btn {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      border: none;
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 26px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s, transform 0.1s;
+      position: relative;
+    }
+    .voice-btn.listening {
+      background: #dc2626;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(220,38,38,0); }
+    }
+
+    /* 저장 버튼 */
+    .save-btn {
+      flex: 1; height: 60px;
+      border-radius: 16px;
+      border: none;
+      background: #7c3aed;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .save-btn:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
+    .save-btn:not(:disabled):active { opacity: 0.85; }
+
+    /* 토스트 */
+    .toast {
+      position: fixed;
+      bottom: 32px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 14px;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+      z-index: 100;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: #39ff14; color: #39ff14; }
+    .toast.error { border-color: #ef4444; color: #ef4444; }
+
+    /* 설정 패널 */
+    .settings-panel {
+      position: fixed; inset: 0;
+      background: #0f0f0f;
+      z-index: 50;
+      display: flex; flex-direction: column;
+      padding: 24px 20px;
+      gap: 20px;
+      max-width: 480px; margin: 0 auto;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+    .settings-panel.open { transform: translateY(0); }
+    .settings-panel h2 { font-size: 18px; color: #a78bfa; }
+    .settings-panel label { font-size: 12px; color: #888; display: block; margin-bottom: 6px; }
+    .settings-panel input {
+      width: 100%; padding: 12px;
+      background: #1a1a1a; border: 1px solid #333;
+      border-radius: 10px; color: #fff; font-size: 14px; outline: none;
+    }
+    .settings-panel input:focus { border-color: #7c3aed; }
+    .settings-panel .hint {
+      font-size: 12px; color: #555; line-height: 1.6;
+      background: #111; border-radius: 10px; padding: 12px;
+    }
+    .settings-panel .hint code {
+      color: #a78bfa; font-family: monospace; font-size: 12px;
+    }
+    .close-btn {
+      padding: 14px; border-radius: 12px; border: none;
+      background: #1a1a1a; color: #fff; font-size: 15px; cursor: pointer;
+      margin-top: auto;
+    }
+    .status-dot {
+      display: inline-block; width: 8px; height: 8px;
+      border-radius: 50%; background: #333;
+      margin-right: 6px; vertical-align: middle;
+    }
+    .status-dot.ok { background: #39ff14; box-shadow: 0 0 6px #39ff14; }
+    .status-dot.err { background: #ef4444; }
+    .test-btn {
+      padding: 10px; border-radius: 10px; border: 1px solid #333;
+      background: none; color: #888; font-size: 13px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🌱 씨앗<span>노트</span></div>
+  <button class="settings-btn" onclick="openSettings()">⚙️</button>
+</div>
+
+<div class="main">
+  <textarea id="textInput" placeholder="생각을 적거나 마이크를 눌러 말해보세요..."></textarea>
+  <div class="actions">
+    <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤</button>
+    <button class="save-btn" id="saveBtn" onclick="saveNote()" disabled>저장</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 설정 패널 -->
+<div class="settings-panel" id="settingsPanel">
+  <h2>⚙️ 설정</h2>
+
+  <div>
+    <label>서버 주소 (Webhook URL)</label>
+    <input type="url" id="webhookUrl" placeholder="http://192.168.x.x:3456" />
+  </div>
+
+  <div>
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText" style="font-size:13px;color:#555;">연결 안 됨</span>
+    <button class="test-btn" onclick="testConnection()" style="float:right">연결 테스트</button>
+  </div>
+
+  <div class="hint">
+    <b style="color:#ccc">서버 주소 찾는 법</b><br><br>
+    1. 컴퓨터에서 서버 실행:<br>
+    <code>cd server && npm install && node server.js</code><br><br>
+    2. 같은 와이파이라면 컴퓨터 IP 확인:<br>
+    &nbsp;&nbsp;Mac: <code>ifconfig | grep inet</code><br>
+    &nbsp;&nbsp;Win: <code>ipconfig</code><br><br>
+    3. 주소 예시:<br>
+    <code>http://192.168.0.10:3456</code><br><br>
+    외부 접속 (외출 중):<br>
+    <code>cloudflared tunnel --url http://localhost:3456</code>
+  </div>
+
+  <button class="close-btn" onclick="closeSettings()">닫기</button>
+</div>
+
+<script>
+  const textInput = document.getElementById("textInput");
+  const saveBtn = document.getElementById("saveBtn");
+  const voiceBtn = document.getElementById("voiceBtn");
+
+  // 입력값 있으면 저장 버튼 활성화
+  textInput.addEventListener("input", () => {
+    saveBtn.disabled = !textInput.value.trim();
+  });
+
+  // ── 설정 ──────────────────────────────
+  let webhookUrl = localStorage.getItem("seednote-webhook") || "";
+
+  function openSettings() {
+    document.getElementById("webhookUrl").value = webhookUrl;
+    document.getElementById("settingsPanel").classList.add("open");
+  }
+  function closeSettings() {
+    webhookUrl = document.getElementById("webhookUrl").value.trim().replace(/\/$/, "");
+    if (webhookUrl) localStorage.setItem("seednote-webhook", webhookUrl);
+    document.getElementById("settingsPanel").classList.remove("open");
+  }
+
+  async function testConnection() {
+    const url = document.getElementById("webhookUrl").value.trim().replace(/\/$/, "");
+    const dot = document.getElementById("statusDot");
+    const txt = document.getElementById("statusText");
+    txt.textContent = "확인 중..."; dot.className = "status-dot";
+    try {
+      const res = await fetch(url + "/ping", { signal: AbortSignal.timeout(4000) });
+      const data = await res.json();
+      if (data.ok) {
+        dot.className = "status-dot ok";
+        txt.textContent = "연결 성공 ✓";
+      } else throw new Error();
+    } catch {
+      dot.className = "status-dot err";
+      txt.textContent = "연결 실패 — 서버 주소 확인";
+    }
+  }
+
+  // ── 저장 ──────────────────────────────
+  async function saveNote() {
+    const text = textInput.value.trim();
+    if (!text) return;
+    if (!webhookUrl) { showToast("설정에서 서버 주소를 입력해주세요.", "error"); openSettings(); return; }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = "저장 중...";
+
+    try {
+      const res = await fetch(webhookUrl + "/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+        signal: AbortSignal.timeout(8000),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showToast("옵시디언에 저장됐어요 ✓", "success");
+        textInput.value = "";
+        saveBtn.disabled = true;
+      } else {
+        showToast(data.error || "저장 실패", "error");
+      }
+    } catch {
+      showToast("서버에 연결할 수 없어요.", "error");
+    } finally {
+      saveBtn.textContent = "저장";
+      saveBtn.disabled = !textInput.value.trim();
+    }
+  }
+
+  // ── 음성 입력 ─────────────────────────
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let isListening = false;
+
+  if (SR) {
+    recognition = new SR();
+    recognition.lang = "ko-KR";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      textInput.value = textInput.value ? textInput.value + " " + transcript : transcript;
+      saveBtn.disabled = !textInput.value.trim();
+      setListening(false);
+    };
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
+  } else {
+    voiceBtn.style.opacity = "0.3";
+    voiceBtn.title = "이 브라우저는 음성 인식을 지원하지 않습니다";
+  }
+
+  function toggleVoice() {
+    if (!recognition) return;
+    if (isListening) { recognition.stop(); setListening(false); }
+    else { recognition.start(); setListening(true); }
+  }
+
+  function setListening(v) {
+    isListening = v;
+    voiceBtn.className = "voice-btn" + (v ? " listening" : "");
+    voiceBtn.textContent = v ? "⏹" : "🎤";
+  }
+
+  // ── 토스트 ────────────────────────────
+  let toastTimer;
+  function showToast(msg, type = "") {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.className = "toast show " + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = "toast"; }, 2800);
+  }
+
+  // 엔터키로 저장 (Shift+Enter는 줄바꿈)
+  textInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 600) {
+      e.preventDefault();
+      if (!saveBtn.disabled) saveNote();
+    }
+  });
+</script>
+
+</body>
+</html>

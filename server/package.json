@@ -1,0 +1,13 @@
+{
+  "name": "seednote-lite-server",
+  "version": "1.0.0",
+  "description": "씨앗노트 - 옵시디언 저장 서버",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "express": "^4.18.0"
+  }
+}
