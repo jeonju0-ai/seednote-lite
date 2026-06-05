@@ -731,6 +731,92 @@ li{font-size:14px;color:#999;margin:4px 0}
     </div>
   </div>
 
+  <!-- ── 버전 업그레이드 ── -->
+  <div style="margin-top:40px">
+    <h2 style="font-size:17px;color:#e5e5e5;margin-bottom:6px">🌿 더 강력하게 — 버전 업그레이드</h2>
+    <p style="font-size:13px;color:#555;margin-bottom:20px">기본 설치가 완료됐다면 아래 버전으로 업그레이드해보세요.</p>
+
+    <!-- v2 -->
+    <div style="background:#141414;border:1px solid #333;border-radius:16px;padding:24px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span style="background:#7c3aed;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">v2</span>
+        <b style="font-size:15px;color:#ddd">저장 확인 + 기록 보기</b>
+      </div>
+      <p style="font-size:13px;color:#888;margin-bottom:14px">저장 후 확인 카드가 뜨고, 기록 탭에서 이전에 남긴 씨앗들을 모아볼 수 있어요.</p>
+      <div style="background:#111;border-radius:10px;padding:14px;font-size:13px;color:#777;margin-bottom:12px">
+        <b style="color:#ccc">v1과 달라진 점</b><br>
+        ✓ 저장 직후 "옵시디언에 저장됐어요" 확인 카드<br>
+        ✓ 📋 기록 탭 — 최근 20개 씨앗 목록
+      </div>
+      <h3>실행 방법</h3>
+      <p>4단계와 동일하게 하되, 폴더만 <b style="color:#a78bfa">v2-history/server</b>로 바꾸면 돼요.</p>
+      <div class="code-block">
+        <pre id="code-v2-mac">cd ~/Desktop/seednote-lite-main/v2-history/server
+npm install
+node server.js</pre>
+        <button class="copy-btn" onclick="copyCode('code-v2-mac',this)">복사</button>
+      </div>
+      <p style="margin-top:8px">앱 주소는 <code style="color:#a78bfa">v2-history/app/index.html</code> 을 카카오톡으로 보내거나<br>
+      GitHub Pages: <code style="color:#a78bfa">jeonju0-ai.github.io/seednote-lite/v2-history/app/</code></p>
+    </div>
+
+    <!-- v3 -->
+    <div style="background:#1a0a2e;border:1px solid #7c3aed;border-radius:16px;padding:24px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span style="background:#a78bfa;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">v3</span>
+        <b style="font-size:15px;color:#ddd">Gemini 생각 확장</b>
+      </div>
+      <p style="font-size:13px;color:#888;margin-bottom:14px">메모를 저장하면 Gemini AI가 생각을 이어받아 질문·아이디어를 달아줘요. 옵시디언에도 함께 저장됩니다.</p>
+      <div style="background:#111;border-radius:10px;padding:14px;font-size:13px;color:#777;margin-bottom:16px">
+        <b style="color:#ccc">v2와 달라진 점</b><br>
+        ✓ 저장 시 Gemini가 자동으로 생각 확장 코멘트 생성<br>
+        ✓ 옵시디언 파일에 "💭 Gemini 생각 확장" 섹션 추가<br>
+        ✓ 기록 탭에서도 Gemini 코멘트 함께 확인
+      </div>
+
+      <h3 style="color:#a78bfa">① Gemini API 키 발급 (무료)</h3>
+      <p style="font-size:13px;color:#888;margin-bottom:10px">Google 계정(Gmail)만 있으면 무료로 발급받을 수 있어요.</p>
+      <ol>
+        <li>아래 링크를 엽니다 (Google 로그인 필요)</li>
+      </ol>
+      <a href="https://aistudio.google.com/apikey" class="link-btn" target="_blank" style="margin:10px 0">🔑 Google AI Studio — API 키 발급</a>
+      <ol start="2">
+        <li>파란색 <b style="color:#a78bfa">+ Create API key</b> 버튼 클릭</li>
+        <li><b style="color:#ddd">Create API key in new project</b> 선택</li>
+        <li>생성된 키를 <b style="color:#39ff14">복사</b>해두세요</li>
+      </ol>
+      <div class="info-box green" style="margin-top:8px">
+        무료 한도가 꽤 넉넉해요 (개인 사용은 거의 무제한 수준).<br>
+        카드 등록 없이 바로 쓸 수 있어요.
+      </div>
+
+      <h3 style="color:#a78bfa;margin-top:20px">② .env 파일에 키 넣기</h3>
+      <p style="font-size:13px;color:#888;margin-bottom:10px"><code style="color:#a78bfa">v3-gemini/server/</code> 폴더 안에 <b style="color:#ddd">.env.example</b> 파일이 있어요.<br>
+      이 파일을 복사해서 이름을 <b style="color:#ddd">.env</b> 로 바꾸고, 텍스트 편집기로 열어서:</p>
+      <div class="code-block">
+        <pre id="code-v3-env">GEMINI_API_KEY=여기에_복사한_키_붙여넣기</pre>
+        <button class="copy-btn" onclick="copyCode('code-v3-env',this)">복사</button>
+      </div>
+      <div class="info-box yellow">
+        <b>.env 파일 이름 앞에 점(.)이 있어요.</b><br>
+        Mac/Windows에서 숨김 파일로 처리될 수 있어요.<br>
+        Mac: 파인더에서 <b style="color:#ddd">Command+Shift+.</b> 누르면 보여요.
+      </div>
+
+      <h3 style="color:#a78bfa;margin-top:20px">③ 서버 실행</h3>
+      <div class="code-block">
+        <pre id="code-v3-run">cd ~/Desktop/seednote-lite-main/v3-gemini/server
+npm install
+node server.js</pre>
+        <button class="copy-btn" onclick="copyCode('code-v3-run',this)">복사</button>
+      </div>
+      <div class="info-box green">
+        성공하면: <code style="color:#39ff14">Gemini: ✓ 활성</code> 이 나와요.<br>
+        이제 저장할 때마다 Gemini가 생각을 확장해줍니다!
+      </div>
+    </div>
+  </div>
+
   <!-- ── 주소 공유하기 ── -->
   <div id="section-share" style="margin-top:40px;background:#141414;border:2px solid #7c3aed;border-radius:16px;padding:24px">
     <h3 style="font-size:16px;color:#a78bfa;margin-bottom:6px">📤 폰으로 주소 전송하기</h3>
