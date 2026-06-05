@@ -215,6 +215,12 @@ li{font-size:14px;color:#999;margin:4px 0}
           <div style="font-size:12px;color:#a78bfa;margin-top:10px;font-weight:600">아래 보기 ↓</div>
         </div>
       </div>
+      <div class="info-box yellow" style="margin-top:14px;font-size:13px">
+        <b>집 밖 (카페·학교·외출 중)에서도 쓰고 싶다면?</b><br>
+        같은 와이파이가 아니어도 어디서든 저장할 수 있어요.<br>
+        설치 후 <b style="color:#f59e0b">Cloudflare Tunnel</b>을 실행하면 전 세계 어디서나 내 컴퓨터에 저장됩니다. →
+        <span style="color:#f59e0b;cursor:pointer" onclick="document.getElementById('step8').scrollIntoView({behavior:'smooth'})">8단계 보기</span>
+      </div>
     </div>
   </div>
 
@@ -723,6 +729,44 @@ li{font-size:14px;color:#999;margin:4px 0}
     </div>
   </div>
 
+  <!-- ── 주소 공유하기 ── -->
+  <div id="section-share" style="margin-top:40px;background:#141414;border:2px solid #7c3aed;border-radius:16px;padding:24px">
+    <h3 style="font-size:16px;color:#a78bfa;margin-bottom:6px">📤 폰으로 주소 전송하기</h3>
+    <p style="font-size:13px;color:#666;margin-bottom:20px">
+      카카오톡 <b style="color:#ddd">나에게 보내기</b>로 아래 두 주소를 보내세요.<br>
+      <span style="font-size:12px;color:#555">서버 주소는 8단계(Cloudflare)에서 만든 주소를 붙여넣으면 돼요.</span>
+    </p>
+
+    <!-- 앱 주소 -->
+    <div style="margin-bottom:16px">
+      <p style="font-size:12px;color:#888;margin-bottom:8px">① 앱 주소 — 폰 크롬에서 여는 주소</p>
+      <div class="code-block" style="padding:16px 48px 16px 16px">
+        <pre id="share-app-url" style="font-size:13px;color:#a78bfa;white-space:normal;word-break:break-all">https://jeonju0-ai.github.io/seednote-lite/app/</pre>
+        <button class="copy-btn" onclick="copyCode('share-app-url',this)">복사</button>
+      </div>
+    </div>
+
+    <!-- 서버 주소 -->
+    <div style="margin-bottom:20px">
+      <p style="font-size:12px;color:#888;margin-bottom:6px">② 서버 주소 — 앱 설정 ⚙️에 입력할 주소</p>
+      <p style="font-size:11px;color:#555;margin-bottom:8px">8단계 Cloudflare 주소를 아래에 붙여넣으세요 (매번 바뀌어요)</p>
+      <input type="text" id="server-url-input"
+        placeholder="https://xxxx.trycloudflare.com"
+        oninput="document.getElementById('share-server-url').textContent=this.value.trim()||'https://xxxx.trycloudflare.com'"
+        style="width:100%;padding:12px;background:#1a1a1a;border:1px solid #444;border-radius:10px;color:#fff;font-size:13px;outline:none;font-family:monospace;margin-bottom:8px;box-sizing:border-box"/>
+      <div class="code-block" style="padding:16px 48px 16px 16px">
+        <pre id="share-server-url" style="font-size:13px;color:#39ff14;white-space:normal;word-break:break-all">https://xxxx.trycloudflare.com</pre>
+        <button class="copy-btn" onclick="copyCode('share-server-url',this)">복사</button>
+      </div>
+    </div>
+
+    <!-- 한번에 복사 -->
+    <button onclick="copyBoth(this)" style="width:100%;padding:14px;background:#7c3aed;border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">
+      📋 두 주소 한번에 복사 → 카카오톡에 붙여넣기
+    </button>
+    <p style="font-size:11px;color:#444;margin-top:8px;text-align:center">복사 후 카카오톡 나에게 보내기에 붙여넣기(길게 누르기)하면 돼요</p>
+  </div>
+
   <!-- ── FAQ ── -->
   <div class="faq">
     <h3 style="font-size:18px;margin:40px 0 16px;color:#a78bfa">자주 묻는 질문</h3>
@@ -866,6 +910,25 @@ function showTooltip(key) {
 function closeTooltip() {
   document.getElementById("tooltipPopup").classList.remove("show");
   document.getElementById("overlay").classList.remove("show");
+}
+
+// ── 두 주소 한번에 복사 ──────────────────
+function copyBoth(btn) {
+  const appUrl = document.getElementById('share-app-url').textContent.trim();
+  const serverUrl = document.getElementById('share-server-url').textContent.trim();
+  const text = `📱 씨앗노트 앱 주소\n${appUrl}\n\n⚙️ 서버 주소 (앱 설정에 입력)\n${serverUrl}`;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '복사됨 ✓ 카카오톡에 붙여넣기하세요';
+    btn.style.background = '#1a3a1a';
+    btn.style.border = '1px solid #39ff14';
+    btn.style.color = '#39ff14';
+    setTimeout(() => {
+      btn.textContent = '📋 두 주소 한번에 복사 → 카카오톡에 붙여넣기';
+      btn.style.background = '#7c3aed';
+      btn.style.border = 'none';
+      btn.style.color = '#fff';
+    }, 3000);
+  });
 }
 
 // 용어 사전 렌더링
