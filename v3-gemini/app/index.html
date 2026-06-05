@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f0f0f" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>씨앗노트 v3</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f0f0f; color: #fff;
+      height: 100dvh; display: flex; flex-direction: column;
+      max-width: 480px; margin: 0 auto; overflow: hidden;
+    }
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid #1e1e1e;
+    }
+    .logo { font-size: 18px; font-weight: 700; color: #a78bfa; }
+    .logo span { color: #39ff14; }
+    .icon-btn { background: none; border: none; color: #444; font-size: 20px; cursor: pointer; padding: 4px; }
+
+    .tabs { display: flex; border-bottom: 1px solid #1e1e1e; }
+    .tab { flex: 1; padding: 12px; background: none; border: none; color: #555;
+           font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; }
+    .tab.active { color: #a78bfa; border-bottom-color: #a78bfa; }
+
+    .panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+    .panel.active { display: flex; }
+
+    /* 입력 패널 */
+    #panel-write { padding: 16px 20px; gap: 12px; overflow-y: auto; }
+    textarea {
+      min-height: 120px; background: #1a1a1a; border: 1px solid #222; border-radius: 16px;
+      color: #fff; font-size: 17px; line-height: 1.6; padding: 16px;
+      resize: none; outline: none; font-family: inherit; width: 100%;
+    }
+    textarea::placeholder { color: #444; }
+    textarea:focus { border-color: #7c3aed; }
+    .actions { display: flex; gap: 12px; align-items: center; }
+    .voice-btn {
+      width: 60px; height: 60px; border-radius: 50%; border: none;
+      background: #1a1a1a; color: #fff; font-size: 26px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .voice-btn.listening { background: #dc2626; animation: pulse 1s infinite; }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(220,38,38,0); }
+    }
+    .save-btn {
+      flex: 1; height: 60px; border-radius: 16px; border: none;
+      background: #7c3aed; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
+    }
+    .save-btn:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
+
+    /* 저장 결과 카드 */
+    .result-card { display: none; border-radius: 14px; overflow: hidden; animation: slideIn 0.3s ease; }
+    .result-card.show { display: block; }
+    @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .result-saved {
+      background: #0d1f0d; border: 1px solid #39ff14;
+      padding: 12px 16px; font-size: 13px;
+    }
+    .result-saved .label { color: #39ff14; font-size: 11px; margin-bottom: 4px; }
+    .result-saved .content { color: #bbb; line-height: 1.5; }
+    .result-gemini {
+      background: #1a0f2e; border: 1px solid #7c3aed; border-top: none;
+      padding: 14px 16px;
+    }
+    .result-gemini .g-label {
+      font-size: 11px; color: #a78bfa; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .result-gemini .g-text { font-size: 14px; color: #ccc; line-height: 1.7; }
+    .result-gemini .g-loading { color: #555; font-size: 13px; }
+
+    /* 기록 패널 */
+    #panel-history { overflow-y: auto; padding: 16px; gap: 10px; flex-direction: column; }
+    .history-empty { text-align: center; color: #333; font-size: 14px; padding: 60px 20px; }
+    .history-item {
+      background: #141414; border: 1px solid #222; border-radius: 12px;
+      padding: 14px 16px; cursor: pointer;
+    }
+    .history-item .h-title { font-size: 14px; color: #ddd; margin-bottom: 4px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .history-item .h-body { font-size: 12px; color: #555; line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .history-item .h-gemini {
+      font-size: 11px; color: #7c3aed; margin-top: 8px; padding-top: 8px;
+      border-top: 1px solid #1e1e1e; line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .history-item .h-file { font-size: 10px; color: #333; margin-top: 6px; }
+
+    /* 토스트 */
+    .toast {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1e1e1e; border: 1px solid #333; border-radius: 12px;
+      padding: 12px 20px; font-size: 14px; transition: transform 0.3s ease;
+      white-space: nowrap; z-index: 100;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.error { border-color: #ef4444; color: #ef4444; }
+
+    /* 설정 */
+    .settings-panel {
+      position: fixed; inset: 0; background: #0f0f0f; z-index: 50;
+      display: flex; flex-direction: column; padding: 24px 20px; gap: 20px;
+      max-width: 480px; margin: 0 auto;
+      transform: translateY(100%); transition: transform 0.3s ease;
+    }
+    .settings-panel.open { transform: translateY(0); }
+    .settings-panel h2 { font-size: 18px; color: #a78bfa; }
+    .settings-panel label { font-size: 12px; color: #888; display: block; margin-bottom: 6px; }
+    .settings-panel input {
+      width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333;
+      border-radius: 10px; color: #fff; font-size: 14px; outline: none;
+    }
+    .settings-panel input:focus { border-color: #7c3aed; }
+    .hint { font-size: 12px; color: #555; line-height: 1.7; background: #111; border-radius: 10px; padding: 12px; }
+    .hint code { color: #a78bfa; font-family: monospace; }
+    .close-btn {
+      padding: 14px; border-radius: 12px; border: none;
+      background: #1a1a1a; color: #fff; font-size: 15px; cursor: pointer; margin-top: auto;
+    }
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #333; margin-right: 6px; }
+    .status-dot.ok { background: #39ff14; box-shadow: 0 0 6px #39ff14; }
+    .status-dot.err { background: #ef4444; }
+    .test-btn { padding: 10px; border-radius: 10px; border: 1px solid #333; background: none; color: #888; font-size: 13px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🌱 씨앗<span>노트</span> <span style="font-size:11px;color:#555;font-weight:400">v3</span></div>
+  <button class="icon-btn" onclick="openSettings()">⚙️</button>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('write', this)">✏️ 입력</button>
+  <button class="tab" onclick="switchTab('history', this)">📋 기록</button>
+</div>
+
+<!-- 입력 패널 -->
+<div class="panel active" id="panel-write">
+  <textarea id="textInput" placeholder="생각을 적거나 마이크를 눌러 말해보세요..."></textarea>
+
+  <!-- 저장+Gemini 결과 -->
+  <div class="result-card" id="resultCard">
+    <div class="result-saved">
+      <div class="label">✓ 옵시디언에 저장됐어요</div>
+      <div class="content" id="resultText"></div>
+    </div>
+    <div class="result-gemini" id="resultGemini">
+      <div class="g-label">💭 Gemini 생각 확장 <span id="gSpinner">...</span></div>
+      <div class="g-text" id="geminiText"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤</button>
+    <button class="save-btn" id="saveBtn" onclick="saveNote()" disabled>저장</button>
+  </div>
+</div>
+
+<!-- 기록 패널 -->
+<div class="panel" id="panel-history">
+  <div class="history-empty" id="historyEmpty">기록을 불러오는 중...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 설정 -->
+<div class="settings-panel" id="settingsPanel">
+  <h2>⚙️ 설정</h2>
+  <div>
+    <label>서버 주소</label>
+    <input type="url" id="webhookUrl" placeholder="http://192.168.x.x:3456" />
+  </div>
+  <div>
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText" style="font-size:13px;color:#555;">연결 안 됨</span>
+    <button class="test-btn" onclick="testConnection()" style="float:right">연결 테스트</button>
+  </div>
+  <div class="hint">
+    <b style="color:#39ff14">✅ 같은 와이파이:</b> <code>http://192.168.x.x:3456</code><br>
+    <b style="color:#a78bfa">✅ 밖·데이터:</b> <code>https://xxxx.trycloudflare.com</code><br><br>
+    <b style="color:#f59e0b">Gemini 설정:</b> 서버 폴더의 .env 파일에<br>
+    <code>GEMINI_API_KEY=여기에_키_입력</code>
+  </div>
+  <button class="close-btn" onclick="closeSettings()">닫기</button>
+</div>
+
+<script>
+  const textInput = document.getElementById("textInput");
+  const saveBtn = document.getElementById("saveBtn");
+  let webhookUrl = localStorage.getItem("seednote-webhook") || "";
+
+  textInput.addEventListener("input", () => {
+    saveBtn.disabled = !textInput.value.trim();
+    document.getElementById("resultCard").classList.remove("show");
+  });
+
+  function switchTab(name, btn) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("panel-" + name).classList.add("active");
+    if (name === "history") loadHistory();
+  }
+
+  async function saveNote() {
+    const text = textInput.value.trim();
+    if (!text) return;
+    if (!webhookUrl) { showToast("설정에서 서버 주소를 입력하세요.", "error"); openSettings(); return; }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = "저장 중...";
+
+    // 결과 카드 준비
+    document.getElementById("resultText").textContent = text.slice(0, 100) + (text.length > 100 ? "…" : "");
+    document.getElementById("geminiText").textContent = "";
+    document.getElementById("gSpinner").textContent = "생각 중...";
+    document.getElementById("resultCard").classList.add("show");
+
+    try {
+      const res = await fetch(webhookUrl + "/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+        signal: AbortSignal.timeout(15000),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        textInput.value = "";
+        saveBtn.disabled = true;
+        if (data.gemini) {
+          document.getElementById("gSpinner").textContent = "";
+          document.getElementById("geminiText").textContent = data.gemini;
+        } else {
+          document.getElementById("gSpinner").textContent = "";
+          document.getElementById("geminiText").textContent = "Gemini 응답 없음 — .env에 GEMINI_API_KEY를 설정하세요.";
+          document.getElementById("geminiText").style.color = "#444";
+        }
+      } else {
+        document.getElementById("resultCard").classList.remove("show");
+        showToast(data.error || "저장 실패", "error");
+      }
+    } catch {
+      document.getElementById("resultCard").classList.remove("show");
+      showToast("서버에 연결할 수 없어요.", "error");
+    } finally {
+      saveBtn.textContent = "저장";
+      saveBtn.disabled = !textInput.value.trim();
+    }
+  }
+
+  async function loadHistory() {
+    const container = document.getElementById("panel-history");
+    const empty = document.getElementById("historyEmpty");
+    if (!webhookUrl) { empty.textContent = "설정에서 서버 주소를 먼저 입력하세요."; return; }
+    empty.textContent = "기록을 불러오는 중...";
+    container.querySelectorAll(".history-item").forEach(el => el.remove());
+    try {
+      const res = await fetch(webhookUrl + "/history", { signal: AbortSignal.timeout(5000) });
+      const data = await res.json();
+      if (!data.ok || !data.items.length) { empty.textContent = "아직 저장된 기록이 없어요."; return; }
+      empty.style.display = "none";
+      data.items.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.innerHTML = `
+          <div class="h-title">${item.title}</div>
+          <div class="h-body">${item.body}</div>
+          ${item.gemini ? `<div class="h-gemini">💭 ${item.gemini}</div>` : ""}
+          <div class="h-file">${item.filename}</div>`;
+        container.appendChild(div);
+      });
+    } catch {
+      empty.textContent = "기록을 불러오지 못했어요.";
+    }
+  }
+
+  function openSettings() {
+    document.getElementById("webhookUrl").value = webhookUrl;
+    document.getElementById("settingsPanel").classList.add("open");
+  }
+  function closeSettings() {
+    webhookUrl = document.getElementById("webhookUrl").value.trim().replace(/\/$/, "");
+    if (webhookUrl) localStorage.setItem("seednote-webhook", webhookUrl);
+    document.getElementById("settingsPanel").classList.remove("open");
+  }
+  async function testConnection() {
+    const url = document.getElementById("webhookUrl").value.trim().replace(/\/$/, "");
+    const dot = document.getElementById("statusDot");
+    const txt = document.getElementById("statusText");
+    txt.textContent = "확인 중..."; dot.className = "status-dot";
+    try {
+      const res = await fetch(url + "/ping", { signal: AbortSignal.timeout(4000) });
+      const data = await res.json();
+      if (data.ok) {
+        dot.className = "status-dot ok";
+        txt.textContent = `연결 성공 ✓${data.gemini ? " · Gemini ✓" : " · Gemini 미설정"}`;
+      } else throw new Error();
+    } catch {
+      dot.className = "status-dot err"; txt.textContent = "연결 실패 — 서버 주소 확인";
+    }
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null, isListening = false;
+  if (SR) {
+    recognition = new SR();
+    recognition.lang = "ko-KR"; recognition.continuous = false; recognition.interimResults = false;
+    recognition.onresult = (e) => {
+      const t = e.results[0][0].transcript;
+      textInput.value = textInput.value ? textInput.value + " " + t : t;
+      saveBtn.disabled = false; setListening(false);
+    };
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
+  } else {
+    document.getElementById("voiceBtn").style.opacity = "0.3";
+  }
+  function toggleVoice() {
+    if (!recognition) return;
+    if (isListening) { recognition.stop(); setListening(false); }
+    else { recognition.start(); setListening(true); }
+  }
+  function setListening(v) {
+    isListening = v;
+    const btn = document.getElementById("voiceBtn");
+    btn.className = "voice-btn" + (v ? " listening" : "");
+    btn.textContent = v ? "⏹" : "🎤";
+  }
+
+  let toastTimer;
+  function showToast(msg, type = "") {
+    const el = document.getElementById("toast");
+    el.textContent = msg; el.className = "toast show " + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = "toast"; }, 2800);
+  }
+
+  textInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 600) {
+      e.preventDefault(); if (!saveBtn.disabled) saveNote();
+    }
+  });
+</script>
+</body>
+</html>
