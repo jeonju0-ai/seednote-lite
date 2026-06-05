@@ -18,20 +18,33 @@
 3. 옵시디언 볼트 경로 자동 감지 (Mac iCloud 경로 우선)
    - 못 찾으면 사용자에게 경로 물어보기
    - 찾으면 `server/.env` 파일에 `VAULT_PATH=경로` 자동 작성
-4. 내 컴퓨터 IP 주소 찾기
-   - Mac: `ipconfig getifaddr en0`
+4. 내 컴퓨터 로컬 IP 주소 찾기
+   - Mac: `ipconfig getifaddr en0` (안 되면 en1, 그래도 안 되면 `ifconfig | grep "inet " | grep -v 127.0.0.1`)
    - Windows: `ipconfig` 실행 후 IPv4 주소 파싱
-5. `server/server.js` 실행
-6. 사용자에게 정확한 폰 설정 URL 알려주기:
-   `http://[찾은 IP 주소]:3456`
+5. `server/server.js` 백그라운드로 실행
+6. cloudflared 설치 여부 확인
+   - 설치됨: 바로 `cloudflared tunnel --url http://localhost:3456` 백그라운드 실행 후 trycloudflare.com 주소 파싱
+   - 미설치: Mac이면 `brew install cloudflare/cloudflare/cloudflared` 안내, Windows면 다운로드 링크 안내
+     → 설치 후 터널 실행
+7. 두 주소가 모두 준비되면 아래 형식으로 안내:
 
-## 사용자가 "외부에서도 쓰고 싶어" 또는 "cloudflare" 라고 하면
+---
+씨앗노트 서버가 켜졌어요!
 
-1. cloudflared 설치 여부 확인
-   - Mac: `brew install cloudflare/cloudflare/cloudflared`
-   - Windows: 다운로드 링크 안내
-2. `cloudflared tunnel --url http://localhost:3456` 실행
-3. 생성된 trycloudflare.com 주소를 사용자에게 알려주기
+📱 앱 주소 (폰 크롬에서 열기):
+https://jeonju0-ai.github.io/seednote-lite/app/
+
+⚙️ 앱 설정에 입력할 서버 주소:
+
+✅ 집/사무실 와이파이 (폰과 컴퓨터가 같은 와이파이):
+http://[로컬 IP]:3456
+
+✅ 다른 장소·데이터(SKT·KT·LG) 어디서든:
+https://[trycloudflare 주소]
+
+💡 모르겠으면 두 번째 주소(trycloudflare)를 쓰면 항상 돼요.
+⚠️ trycloudflare 주소는 서버를 껐다 켜면 바뀌어요.
+---
 
 ## 사용자가 "서버 꺼줘" 라고 하면
 
