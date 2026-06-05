@@ -173,8 +173,53 @@ li{font-size:14px;color:#999;margin:4px 0}
     </div>
   </div>
 
+  <!-- 시작 흐름 -->
+  <div style="margin-top:32px">
+    <h2 style="font-size:16px;color:#e5e5e5;margin-bottom:20px;text-align:center;letter-spacing:0.3px">📌 이렇게 시작하세요</h2>
+
+    <!-- 1. 다운로드 -->
+    <div style="background:#141414;border:1px solid #333;border-radius:16px;padding:24px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#7c3aed;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+        <b style="font-size:15px;color:#ddd">파일 다운로드</b>
+      </div>
+      <p style="font-size:13px;color:#888;margin-bottom:14px">아래 버튼을 클릭하면 ZIP 파일이 자동으로 다운돼요</p>
+      <a href="https://github.com/jeonju0-ai/seednote-lite/archive/refs/heads/main.zip" class="link-btn primary">📦 ZIP 파일 다운로드</a>
+      <div class="info-box" style="margin-top:14px;font-size:13px">
+        다운로드 후 압축을 풀면 <b style="color:#a78bfa">seednote-lite-main</b> 폴더가 생겨요.<br>
+        🍎 Mac: 더블클릭 &nbsp;|&nbsp; 🪟 Windows: 우클릭 → 모두 압축 풀기<br>
+        폴더를 바탕화면으로 옮겨두세요.
+      </div>
+    </div>
+
+    <!-- 화살표 -->
+    <div style="text-align:center;font-size:22px;color:#444;margin:14px 0">↓</div>
+
+    <!-- 2. 방법 선택 -->
+    <div style="background:#141414;border:1px solid #333;border-radius:16px;padding:24px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#7c3aed;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+        <b style="font-size:15px;color:#ddd">설치 방법 선택</b>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="background:linear-gradient(135deg,#1a0a2e,#0d1a0d);border:2px solid #39ff14;border-radius:12px;padding:18px;cursor:pointer" onclick="document.getElementById('section-cli').scrollIntoView({behavior:'smooth'})">
+          <div style="font-size:22px;margin-bottom:8px">⚡</div>
+          <b style="color:#39ff14;font-size:14px">Claude CLI</b>
+          <p style="font-size:12px;color:#888;margin-top:6px;line-height:1.5">Claude가 설치·설정·실행을 전부 알아서 해줘요. 2단계로 끝!</p>
+          <div style="font-size:12px;color:#39ff14;margin-top:10px;font-weight:600">아래 보기 ↓</div>
+        </div>
+        <div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:18px;cursor:pointer" onclick="document.getElementById('step1').scrollIntoView({behavior:'smooth'})">
+          <div style="font-size:22px;margin-bottom:8px">📋</div>
+          <b style="color:#ddd;font-size:14px">단계별 가이드</b>
+          <p style="font-size:12px;color:#666;margin-top:6px;line-height:1.5">처음부터 차근차근 8단계로 직접 설치해요</p>
+          <div style="font-size:12px;color:#a78bfa;margin-top:10px;font-weight:600">아래 보기 ↓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Claude CLI 섹션 -->
-  <div style="margin-top:32px;background:linear-gradient(135deg,#1a0a2e,#0d1a0d);border:1px solid #39ff14;border-radius:16px;padding:24px">
+  <div id="section-cli" style="margin-top:32px;background:linear-gradient(135deg,#1a0a2e,#0d1a0d);border:1px solid #39ff14;border-radius:16px;padding:24px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
       <span style="font-size:24px">⚡</span>
       <h2 style="font-size:16px;color:#39ff14">Claude CLI가 있다면? — 2단계로 끝!</h2>
@@ -216,6 +261,10 @@ li{font-size:14px;color:#999;margin:4px 0}
     <p style="font-size:12px;color:#555;margin-top:12px">
       Claude CLI가 없다면? 아래 단계별 가이드를 따라하세요.
     </p>
+  </div>
+
+  <div style="margin-top:32px;text-align:center">
+    <p style="font-size:13px;color:#444">━━━━ Claude CLI가 없다면 아래 단계별 가이드를 따라하세요 ━━━━</p>
   </div>
 
   <!-- OS 선택 -->
