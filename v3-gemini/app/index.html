@@ -57,7 +57,7 @@
     }
     .save-btn:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
 
-    /* 저장 결과 카드 */
+    /* 💦 물주기 결과 카드 */
     .result-card { display: none; border-radius: 14px; overflow: hidden; animation: slideIn 0.3s ease; }
     .result-card.show { display: block; }
     @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
@@ -183,7 +183,7 @@
 </div>
 
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('write', this)">🌱 물주기</button>
+  <button class="tab active" onclick="switchTab('write', this)">🌱 씨앗심기</button>
   <button class="tab" onclick="switchTab('history', this)">🌿 새싹</button>
 </div>
 
@@ -191,10 +191,10 @@
 <div class="panel active" id="panel-write">
   <textarea id="textInput" placeholder="생각을 적거나 마이크를 눌러 말해보세요..."></textarea>
 
-  <!-- 저장+Gemini 결과 -->
+  <!-- 💦 물주기+Gemini 결과 -->
   <div class="result-card" id="resultCard">
     <div class="result-saved">
-      <div class="label">✓ 옵시디언에 저장됐어요</div>
+      <div class="label">✓ 씨앗이 심어졌어요</div>
       <div class="content" id="resultText"></div>
     </div>
     <div class="result-gemini" id="resultGemini">
@@ -205,7 +205,7 @@
 
   <div class="actions">
     <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤</button>
-    <button class="save-btn" id="saveBtn" onclick="saveNote()" disabled>저장</button>
+    <button class="save-btn" id="saveBtn" onclick="saveNote()" disabled>💦 물주기</button>
   </div>
 </div>
 
@@ -319,14 +319,14 @@
 
     const server = await resolveServer();
     if (!server) {
-      saveBtn.textContent = "저장";
+      saveBtn.textContent = "💦 물주기";
       saveBtn.disabled = false;
       showToast("설정에서 서버 주소를 입력하세요.", "error");
       openSettings();
       return;
     }
 
-    saveBtn.textContent = "저장 중...";
+    saveBtn.textContent = "💦 물주기 중...";
     document.getElementById("resultText").textContent = text.slice(0, 100) + (text.length > 100 ? "…" : "");
     document.getElementById("geminiText").textContent = "";
     document.getElementById("gSpinner").textContent = "생각 중...";
@@ -353,13 +353,13 @@
         }
       } else {
         document.getElementById("resultCard").classList.remove("show");
-        showToast(data.error || "저장 실패", "error");
+        showToast(data.error || "💦 물주기 실패", "error");
       }
     } catch {
       document.getElementById("resultCard").classList.remove("show");
       showToast("서버에 연결할 수 없어요.", "error");
     } finally {
-      saveBtn.textContent = "저장";
+      saveBtn.textContent = "💦 물주기";
       saveBtn.disabled = !textInput.value.trim();
     }
   }
@@ -374,7 +374,7 @@
     try {
       const res = await fetch(server + "/history", { signal: AbortSignal.timeout(5000) });
       const data = await res.json();
-      if (!data.ok || !data.items.length) { empty.textContent = "아직 저장된 기록이 없어요."; return; }
+      if (!data.ok || !data.items.length) { empty.textContent = "아직 심어진 씨앗이 없어요."; return; }
       empty.style.display = "none";
       data.items.forEach(item => {
         const div = document.createElement("div");
