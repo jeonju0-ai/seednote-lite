@@ -6,21 +6,21 @@ const https = require("https");
 const crypto = require("crypto");
 require("dotenv").config();
 
-// 토큰 자동 생성 (없을 때만)
-function ensureToken() {
+// 토큰/비밀키 자동 생성 (없을 때만)
+function ensureEnvVar(key, generator) {
   const envPath = path.join(__dirname, ".env");
   let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf8") : "";
-  if (/^SEEDNOTE_TOKEN=/m.test(envContent)) {
-    return process.env.SEEDNOTE_TOKEN;
-  }
-  const token = crypto.randomBytes(3).toString("hex"); // 예: a3f8k2
-  envContent = envContent.trimEnd() + `\nSEEDNOTE_TOKEN=${token}\n`;
+  const regex = new RegExp(`^${key}=`, "m");
+  if (regex.test(envContent)) return process.env[key];
+  const value = generator();
+  envContent = envContent.trimEnd() + `\n${key}=${value}\n`;
   fs.writeFileSync(envPath, envContent, "utf8");
-  process.env.SEEDNOTE_TOKEN = token;
-  return token;
+  process.env[key] = value;
+  return value;
 }
 
-const SEEDNOTE_TOKEN = ensureToken();
+const SEEDNOTE_TOKEN  = ensureEnvVar("SEEDNOTE_TOKEN",  () => crypto.randomBytes(3).toString("hex"));
+const SEEDNOTE_SECRET = ensureEnvVar("SEEDNOTE_SECRET", () => crypto.randomBytes(16).toString("hex"));
 
 const app = express();
 app.use(express.json());

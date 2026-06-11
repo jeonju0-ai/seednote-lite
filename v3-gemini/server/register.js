@@ -16,12 +16,13 @@ if (!url) {
 }
 
 const token = process.env.SEEDNOTE_TOKEN;
-if (!token) {
-  console.error("토큰을 찾을 수 없습니다. server.js를 먼저 실행해 토큰을 생성하세요.");
+const secret = process.env.SEEDNOTE_SECRET;
+if (!token || !secret) {
+  console.error("토큰/비밀키를 찾을 수 없습니다. server.js를 먼저 실행해 생성하세요.");
   process.exit(1);
 }
 
-const body = JSON.stringify({ token, url });
+const body = JSON.stringify({ token, url, secret });
 const parsed = new URL(RELAY_URL + "/api/register");
 
 const options = {
