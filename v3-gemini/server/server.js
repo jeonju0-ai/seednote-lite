@@ -3,7 +3,24 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const https = require("https");
+const crypto = require("crypto");
 require("dotenv").config();
+
+// 토큰 자동 생성 (없을 때만)
+function ensureToken() {
+  const envPath = path.join(__dirname, ".env");
+  let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf8") : "";
+  if (/^SEEDNOTE_TOKEN=/m.test(envContent)) {
+    return process.env.SEEDNOTE_TOKEN;
+  }
+  const token = crypto.randomBytes(3).toString("hex"); // 예: a3f8k2
+  envContent = envContent.trimEnd() + `\nSEEDNOTE_TOKEN=${token}\n`;
+  fs.writeFileSync(envPath, envContent, "utf8");
+  process.env.SEEDNOTE_TOKEN = token;
+  return token;
+}
+
+const SEEDNOTE_TOKEN = ensureToken();
 
 const app = express();
 app.use(express.json());
@@ -140,9 +157,18 @@ app.get("/ping", (req, res) => res.json({ ok: true, vault: VAULT, gemini: !!GEMI
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log("================================");
-  console.log(`  씨앗노트 v3 (Gemini) 서버 실행 중`);
+  console.log(`  씨앗노트 v3 서버 실행 중`);
   console.log(`  http://localhost:${PORT}`);
   console.log(`  저장 경로: ${VAULT}`);
-  console.log(`  Gemini: ${GEMINI_API_KEY ? "✓ 활성" : "✗ GEMINI_API_KEY 없음 (.env 확인)"}`);
+  console.log(`  Gemini: ${GEMINI_API_KEY ? "✓ 활성" : "✗ 없음"}`);
+  console.log("================================");
+  console.log("");
+  console.log("  [폰 앱 연결 방법]");
+  console.log(`  토큰: ${SEEDNOTE_TOKEN}`);
+  console.log("  → 폰 앱 설정에 위 토큰을 입력하세요");
+  console.log("");
+  console.log("  [외부 접속 등록 방법]");
+  console.log("  1. 새 터미널에서: cloudflared tunnel --url http://localhost:3456");
+  console.log("  2. 나온 주소로: node register.js https://xxxx.trycloudflare.com");
   console.log("================================");
 });

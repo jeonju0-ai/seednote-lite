@@ -122,11 +122,9 @@
       border-radius: 10px; color: #fff; font-size: 14px; outline: none;
     }
     .settings-panel input:focus { border-color: #7c3aed; }
-    .url-group { display: flex; flex-direction: column; gap: 12px; }
-    .url-label { font-size: 12px; color: #888; margin-bottom: 4px; }
-    .url-badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 20px; margin-left: 6px; vertical-align: middle; }
-    .badge-local { background: #0d1f0d; color: #39ff14; border: 1px solid #39ff14; }
-    .badge-ext { background: #1a0f2e; color: #a78bfa; border: 1px solid #7c3aed; }
+    .token-group { display: flex; flex-direction: column; gap: 6px; }
+    .token-label { font-size: 12px; color: #888; }
+    .token-input { letter-spacing: 4px; font-size: 22px; text-align: center; font-weight: 700; }
     .hint { font-size: 12px; color: #555; line-height: 1.7; background: #111; border-radius: 10px; padding: 12px; }
     .hint code { color: #a78bfa; font-family: monospace; }
     .close-btn {
@@ -183,15 +181,9 @@
 <!-- 설정 -->
 <div class="settings-panel" id="settingsPanel">
   <h2>⚙️ 설정</h2>
-  <div class="url-group">
-    <div>
-      <div class="url-label">집·사무실 주소 <span class="url-badge badge-local">와이파이</span></div>
-      <input type="url" id="urlLocal" placeholder="http://192.168.x.x:3456" />
-    </div>
-    <div>
-      <div class="url-label">외부·데이터 주소 <span class="url-badge badge-ext">어디서나</span></div>
-      <input type="url" id="urlExternal" placeholder="https://xxxx.trycloudflare.com" />
-    </div>
+  <div class="token-group">
+    <div class="token-label">연결 토큰 — 서버 터미널에 표시된 6자리</div>
+    <input class="token-input" type="text" id="tokenInput" placeholder="a3f8k2" maxlength="6" />
   </div>
   <div>
     <span class="status-dot" id="statusDot"></span>
@@ -199,10 +191,12 @@
     <button class="test-btn" onclick="testConnection()" style="float:right">연결 테스트</button>
   </div>
   <div class="hint">
-    입력한 주소는 <b style="color:#39ff14">자동 저장</b>됩니다.<br>
-    저장 시 와이파이 연결 실패하면 <b style="color:#a78bfa">외부 주소로 자동 전환</b>.<br><br>
-    <b style="color:#f59e0b">외부 주소 만들기:</b> Mac에서<br>
-    <code>cloudflared tunnel --url http://localhost:3456</code>
+    토큰 입력 후 자동 저장.<br>
+    집 와이파이 → 자동 직접 연결.<br>
+    밖·데이터·공공 와이파이 → 릴레이 경유 자동 연결.<br><br>
+    <b style="color:#f59e0b">토큰 확인:</b> 서버 터미널 상단에 표시됨.<br>
+    <b style="color:#f59e0b">외부 등록:</b> cloudflared 실행 후<br>
+    <code>node register.js https://xxxx.trycloudflare.com</code>
   </div>
   <button class="close-btn" onclick="closeSettings()">닫기</button>
 </div>
@@ -211,9 +205,7 @@
   const textInput = document.getElementById("textInput");
   const saveBtn = document.getElementById("saveBtn");
 
-  // 두 주소 localStorage에서 로드
-  let urlLocal    = localStorage.getItem("seednote-local")    || "";
-  let urlExternal = localStorage.getItem("seednote-external") || "";
+  let userToken = localStorage.getItem("seednote-token") || "";
 
   textInput.addEventListener("input", () => {
     saveBtn.disabled = !textInput.value.trim();
@@ -228,16 +220,41 @@
     if (name === "history") loadHistory();
   }
 
-  // 로컬 먼저 시도, 3초 내 실패 시 외부로 자동 폴백
-  async function resolveServer() {
-    if (urlLocal) {
+  // WebRTC로 로컬 IP 자동 감지
+  async function getLocalIP() {
+    return new Promise((resolve) => {
       try {
-        const res = await fetch(urlLocal + "/ping", { signal: AbortSignal.timeout(3000) });
-        const d = await res.json();
-        if (d.ok) return urlLocal;
+        const pc = new RTCPeerConnection({ iceServers: [] });
+        pc.createDataChannel("");
+        pc.createOffer().then(o => pc.setLocalDescription(o));
+        pc.onicecandidate = e => {
+          if (!e.candidate) return;
+          const m = e.candidate.candidate.match(/(\d+\.\d+\.\d+\.\d+)/);
+          if (m && !m[1].startsWith("127.")) { resolve(m[1]); pc.close(); }
+        };
+        setTimeout(() => resolve(null), 1200);
+      } catch { resolve(null); }
+    });
+  }
+
+  // 1단계: 같은 와이파이 직접 연결 / 2단계: 릴레이 경유
+  async function resolveServer() {
+    const localIP = await getLocalIP();
+    if (localIP) {
+      try {
+        const r = await fetch(`http://${localIP}:3456/ping`,
+          { signal: AbortSignal.timeout(2000) });
+        if ((await r.json()).ok) return `http://${localIP}:3456`;
       } catch {}
     }
-    if (urlExternal) return urlExternal;
+    if (userToken) {
+      try {
+        const r = await fetch(
+          `https://seednote-relay.vercel.app/api/url?token=${userToken}`);
+        const d = await r.json();
+        if (d.url) return d.url;
+      } catch {}
+    }
     return null;
   }
 
@@ -274,8 +291,6 @@
       if (data.ok) {
         textInput.value = "";
         saveBtn.disabled = true;
-        const usedExt = server === urlExternal && urlLocal;
-        if (usedExt) showToast("외부 주소로 저장됨");
         if (data.gemini) {
           document.getElementById("gSpinner").textContent = "";
           document.getElementById("geminiText").textContent = data.gemini;
@@ -325,57 +340,41 @@
   }
 
   function openSettings() {
-    document.getElementById("urlLocal").value    = urlLocal;
-    document.getElementById("urlExternal").value = urlExternal;
+    document.getElementById("tokenInput").value = userToken;
     document.getElementById("settingsPanel").classList.add("open");
   }
   function closeSettings() {
     document.getElementById("settingsPanel").classList.remove("open");
   }
 
-  // input 변경 즉시 저장 (Android 뒤로가기로 닫아도 유지)
-  document.getElementById("urlLocal").addEventListener("input", e => {
-    urlLocal = e.target.value.trim().replace(/\/$/, "");
-    localStorage.setItem("seednote-local", urlLocal);
-  });
-  document.getElementById("urlExternal").addEventListener("input", e => {
-    urlExternal = e.target.value.trim().replace(/\/$/, "");
-    localStorage.setItem("seednote-external", urlExternal);
+  document.getElementById("tokenInput").addEventListener("input", e => {
+    userToken = e.target.value.trim().toLowerCase();
+    localStorage.setItem("seednote-token", userToken);
   });
 
   async function testConnection() {
-    const local = document.getElementById("urlLocal").value.trim().replace(/\/$/, "");
-    const ext   = document.getElementById("urlExternal").value.trim().replace(/\/$/, "");
     const dot = document.getElementById("statusDot");
     const txt = document.getElementById("statusText");
     txt.textContent = "확인 중..."; dot.className = "status-dot";
 
-    // 로컬 먼저
-    if (local) {
-      try {
-        const res = await fetch(local + "/ping", { signal: AbortSignal.timeout(3000) });
-        const d = await res.json();
-        if (d.ok) {
-          dot.className = "status-dot ok";
-          txt.textContent = `와이파이 연결 ✓${d.gemini ? " · Gemini ✓" : ""}`;
-          return;
-        }
-      } catch {}
+    const server = await resolveServer();
+    if (!server) {
+      dot.className = "status-dot err";
+      txt.textContent = "연결 실패 — 토큰 확인";
+      return;
     }
-    // 외부 시도
-    if (ext) {
-      try {
-        const res = await fetch(ext + "/ping", { signal: AbortSignal.timeout(5000) });
-        const d = await res.json();
-        if (d.ok) {
-          dot.className = "status-dot ok";
-          txt.textContent = `외부 연결 ✓${d.gemini ? " · Gemini ✓" : ""}`;
-          return;
-        }
-      } catch {}
-    }
+    try {
+      const res = await fetch(server + "/ping", { signal: AbortSignal.timeout(5000) });
+      const d = await res.json();
+      if (d.ok) {
+        dot.className = "status-dot ok";
+        const via = server.includes("trycloudflare") || server.includes("vercel") ? "릴레이" : "와이파이";
+        txt.textContent = `${via} 연결 ✓${d.gemini ? " · Gemini ✓" : ""}`;
+        return;
+      }
+    } catch {}
     dot.className = "status-dot err";
-    txt.textContent = "연결 실패 — 주소 확인";
+    txt.textContent = "연결 실패";
   }
 
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
