@@ -80,7 +80,7 @@ function askGemini(text) {
       });
     });
     req.on("error", () => resolve(null));
-    req.setTimeout(10000, () => { req.destroy(); resolve(null); });
+    req.setTimeout(25000, () => { req.destroy(); resolve(null); });
     req.write(body);
     req.end();
   });
