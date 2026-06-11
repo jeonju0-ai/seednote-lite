@@ -159,6 +159,23 @@ app.get("/history", (req, res) => {
   }
 });
 
+// 씨앗 삭제
+app.delete("/delete", (req, res) => {
+  const { filename } = req.body;
+  if (!filename || !filename.startsWith("씨앗_") || !filename.endsWith(".md")) {
+    return res.json({ ok: false, error: "잘못된 파일명" });
+  }
+  const filepath = path.join(VAULT, filename);
+  if (!fs.existsSync(filepath)) return res.json({ ok: false, error: "파일 없음" });
+  try {
+    fs.unlinkSync(filepath);
+    console.log(`[삭제] ${filename}`);
+    res.json({ ok: true });
+  } catch (e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
 app.get("/ping", (req, res) => res.json({ ok: true, vault: VAULT, gemini: !!GEMINI_API_KEY }));
 
 app.listen(PORT, "0.0.0.0", () => {
