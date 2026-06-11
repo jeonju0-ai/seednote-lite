@@ -53,7 +53,13 @@ function askGemini(text) {
   return new Promise((resolve) => {
     if (!GEMINI_API_KEY) { resolve(null); return; }
 
-    const prompt = `다음 메모를 읽고 생각을 확장할 수 있는 질문이나 연결 아이디어를 2~3문장으로 짧게 제안해줘. 친근한 말투로, 한국어로.
+    const prompt = `당신은 깊이 있는 사고를 돕는 지적 파트너입니다. 아래 메모를 읽고 다음 세 가지 중 가장 적합한 한 가지를 선택해 응답하세요.
+
+1. **숨겨진 전제 질문** — 메모 속에 당연하게 여기지만 실제론 검토가 필요한 가정을 드러내는 질문
+2. **반대 시각** — 메모의 주장이나 방향과 반대되는 관점 또는 놓친 리스크
+3. **연결 아이디어** — 이 메모와 연결될 수 있는 다른 영역의 개념·사례·패턴
+
+응답 형식: 선택한 유형을 먼저 한 단어로 밝히고(예: "질문:" / "반대:" / "연결:"), 이어서 2~3문장으로 핵심만 날카롭게. 친근하고 간결한 한국어로.
 
 메모: "${text}"`;
 
@@ -63,7 +69,7 @@ function askGemini(text) {
 
     const options = {
       hostname: "generativelanguage.googleapis.com",
-      path: `/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      path: `/v1beta/models/gemini-2.5-pro:generateContent?key=${GEMINI_API_KEY}`,
       method: "POST",
       headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body) }
     };
