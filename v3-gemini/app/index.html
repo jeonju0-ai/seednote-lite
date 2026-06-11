@@ -131,11 +131,16 @@
       font-size: 13px; color: #c4b5fd; line-height: 1.8; white-space: pre-wrap;
     }
     .detail-modal .d-file { font-size: 11px; color: #333; margin-bottom: 16px; }
+    .detail-modal .d-btns { display: flex; gap: 10px; margin-top: 10px; }
     .detail-modal .d-close {
-      width: 100%; padding: 14px; border: none; border-radius: 10px;
+      flex: 1; padding: 14px; border: none; border-radius: 10px;
       background: #222; color: #888; font-size: 15px; cursor: pointer;
-      margin-top: 10px;
     }
+    .detail-modal .d-del {
+      padding: 14px 20px; border: none; border-radius: 10px;
+      background: #1a0a0a; color: #555; font-size: 15px; cursor: pointer;
+    }
+    .detail-modal .d-del:active { background: #2a0a0a; color: #ef4444; }
 
     /* 토스트 */
     .toast {
@@ -229,7 +234,10 @@
       <div class="d-gemini-label">💭 Gemini 생각 확장</div>
       <div class="d-gemini-text" id="detailGeminiText"></div>
     </div>
-    <button class="d-close" onclick="closeDetail()">닫기</button>
+    <div class="d-btns">
+      <button class="d-close" onclick="closeDetail()">닫기</button>
+      <button class="d-del" onclick="deleteFromDetail()">🗑️</button>
+    </div>
   </div>
 </div>
 
@@ -422,7 +430,10 @@
     }
   }
 
+  let detailCurrentFilename = null;
+
   function openDetail(item) {
+    detailCurrentFilename = item.filename;
     document.getElementById("detailFile").textContent = item.filename;
     document.getElementById("detailTitle").textContent = item.title;
     document.getElementById("detailBody").textContent = item.body;
@@ -434,6 +445,33 @@
       geminiEl.style.display = "none";
     }
     document.getElementById("detailModal").classList.add("open");
+  }
+
+  async function deleteFromDetail() {
+    if (!detailCurrentFilename) return;
+    if (!confirm("이 씨앗을 삭제할까요?")) return;
+    const server = await resolveServer();
+    if (!server) { showToast("서버 연결 안 됨", "error"); return; }
+    try {
+      const res = await fetch(server + "/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: detailCurrentFilename }),
+        signal: AbortSignal.timeout(5000)
+      });
+      const data = await res.json();
+      if (data.ok) {
+        document.querySelectorAll(".history-item").forEach(el => {
+          if (el.querySelector(".h-file")?.textContent === detailCurrentFilename) el.remove();
+        });
+        closeDetail();
+        showToast("삭제됐어요");
+      } else {
+        showToast(data.error || "삭제 실패", "error");
+      }
+    } catch {
+      showToast("삭제 실패", "error");
+    }
   }
 
   function closeDetail(e) {
