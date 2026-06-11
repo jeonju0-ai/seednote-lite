@@ -6,285 +6,357 @@
   <meta name="theme-color" content="#0f0f0f" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>씨앗노트</title>
+  <title>씨앗노트 v3</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0f0f0f;
-      color: #fff;
-      height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      max-width: 480px;
-      margin: 0 auto;
-      overflow: hidden;
+      background: #0f0f0f; color: #fff;
+      height: 100dvh; display: flex; flex-direction: column;
+      max-width: 480px; margin: 0 auto; overflow: hidden;
     }
-
-    /* 헤더 */
     .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px;
-      border-bottom: 1px solid #1e1e1e;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid #1e1e1e;
     }
     .logo { font-size: 18px; font-weight: 700; color: #a78bfa; }
     .logo span { color: #39ff14; }
-    .settings-btn {
-      background: none; border: none; color: #444;
-      font-size: 20px; cursor: pointer; padding: 4px;
-    }
+    .icon-btn { background: none; border: none; color: #444; font-size: 20px; cursor: pointer; padding: 4px; }
 
-    /* 메인 */
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 24px 20px 20px;
-      gap: 16px;
-      overflow: hidden;
-    }
+    .tabs { display: flex; border-bottom: 1px solid #1e1e1e; }
+    .tab { flex: 1; padding: 12px; background: none; border: none; color: #555;
+           font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; }
+    .tab.active { color: #a78bfa; border-bottom-color: #a78bfa; }
 
-    /* 텍스트 입력 */
+    .panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+    .panel.active { display: flex; }
+
+    /* 입력 패널 */
+    #panel-write { padding: 16px 20px; gap: 12px; overflow-y: auto; }
     textarea {
-      flex: 1;
-      background: #1a1a1a;
-      border: 1px solid #222;
-      border-radius: 16px;
-      color: #fff;
-      font-size: 17px;
-      line-height: 1.6;
-      padding: 16px;
-      resize: none;
-      outline: none;
-      font-family: inherit;
+      min-height: 120px; background: #1a1a1a; border: 1px solid #222; border-radius: 16px;
+      color: #fff; font-size: 17px; line-height: 1.6; padding: 16px;
+      resize: none; outline: none; font-family: inherit; width: 100%;
     }
     textarea::placeholder { color: #444; }
     textarea:focus { border-color: #7c3aed; }
-
-    /* 버튼 영역 */
-    .actions {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    /* 음성 버튼 */
+    .actions { display: flex; gap: 12px; align-items: center; }
     .voice-btn {
-      width: 60px; height: 60px;
-      border-radius: 50%;
-      border: none;
-      background: #1a1a1a;
-      color: #fff;
-      font-size: 26px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.15s, transform 0.1s;
-      position: relative;
+      width: 60px; height: 60px; border-radius: 50%; border: none;
+      background: #1a1a1a; color: #fff; font-size: 26px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .voice-btn.listening {
-      background: #dc2626;
-      animation: pulse 1s infinite;
-    }
+    .voice-btn.listening { background: #dc2626; animation: pulse 1s infinite; }
     @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+      0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
       50% { box-shadow: 0 0 0 12px rgba(220,38,38,0); }
     }
-
-    /* 저장 버튼 */
     .save-btn {
-      flex: 1; height: 60px;
-      border-radius: 16px;
-      border: none;
-      background: #7c3aed;
-      color: #fff;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.15s;
+      flex: 1; height: 60px; border-radius: 16px; border: none;
+      background: #7c3aed; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
     }
     .save-btn:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
-    .save-btn:not(:disabled):active { opacity: 0.85; }
+
+    /* 저장 결과 카드 */
+    .result-card { display: none; border-radius: 14px; overflow: hidden; animation: slideIn 0.3s ease; }
+    .result-card.show { display: block; }
+    @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .result-saved {
+      background: #0d1f0d; border: 1px solid #39ff14;
+      padding: 12px 16px; font-size: 13px;
+    }
+    .result-saved .label { color: #39ff14; font-size: 11px; margin-bottom: 4px; }
+    .result-saved .content { color: #bbb; line-height: 1.5; }
+    .result-gemini {
+      background: #1a0f2e; border: 1px solid #7c3aed; border-top: none;
+      padding: 14px 16px;
+    }
+    .result-gemini .g-label {
+      font-size: 11px; color: #a78bfa; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .result-gemini .g-text { font-size: 14px; color: #ccc; line-height: 1.7; }
+    .result-gemini .g-loading { color: #555; font-size: 13px; }
+
+    /* 기록 패널 */
+    #panel-history { overflow-y: auto; padding: 16px; gap: 10px; flex-direction: column; }
+    .history-empty { text-align: center; color: #333; font-size: 14px; padding: 60px 20px; }
+    .history-item {
+      background: #141414; border: 1px solid #222; border-radius: 12px;
+      padding: 14px 16px; cursor: pointer;
+    }
+    .history-item .h-title { font-size: 14px; color: #ddd; margin-bottom: 4px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .history-item .h-body { font-size: 12px; color: #555; line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .history-item .h-gemini {
+      font-size: 11px; color: #7c3aed; margin-top: 8px; padding-top: 8px;
+      border-top: 1px solid #1e1e1e; line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .history-item .h-file { font-size: 10px; color: #333; margin-top: 6px; }
+    .history-item:active { background: #1a1a1a; }
+
+    /* 상세 모달 */
+    .detail-modal {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.85); padding: 20px;
+      overflow-y: auto;
+    }
+    .detail-modal.open { display: flex; flex-direction: column; }
+    .detail-modal .d-card {
+      background: #141414; border: 1px solid #2a2a2a; border-radius: 16px;
+      padding: 20px; flex: 1;
+    }
+    .detail-modal .d-title {
+      font-size: 16px; font-weight: 600; color: #fff;
+      line-height: 1.5; margin-bottom: 14px;
+    }
+    .detail-modal .d-body {
+      font-size: 14px; color: #aaa; line-height: 1.8;
+      white-space: pre-wrap; margin-bottom: 16px;
+    }
+    .detail-modal .d-gemini {
+      background: #0d0d1a; border: 1px solid #2e1a5e;
+      border-radius: 10px; padding: 14px; margin-bottom: 14px;
+    }
+    .detail-modal .d-gemini-label {
+      font-size: 11px; color: #7c3aed; font-weight: 600;
+      margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+    }
+    .detail-modal .d-gemini-text {
+      font-size: 13px; color: #c4b5fd; line-height: 1.8; white-space: pre-wrap;
+    }
+    .detail-modal .d-file { font-size: 11px; color: #333; margin-bottom: 16px; }
+    .detail-modal .d-close {
+      width: 100%; padding: 14px; border: none; border-radius: 10px;
+      background: #222; color: #888; font-size: 15px; cursor: pointer;
+      margin-top: 10px;
+    }
 
     /* 토스트 */
     .toast {
-      position: fixed;
-      bottom: 32px; left: 50%;
+      position: fixed; bottom: 32px; left: 50%;
       transform: translateX(-50%) translateY(100px);
-      background: #1e1e1e;
-      border: 1px solid #333;
-      border-radius: 12px;
-      padding: 12px 20px;
-      font-size: 14px;
-      transition: transform 0.3s ease;
-      white-space: nowrap;
-      z-index: 100;
+      background: #1e1e1e; border: 1px solid #333; border-radius: 12px;
+      padding: 12px 20px; font-size: 14px; transition: transform 0.3s ease;
+      white-space: nowrap; z-index: 100;
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
-    .toast.success { border-color: #39ff14; color: #39ff14; }
     .toast.error { border-color: #ef4444; color: #ef4444; }
 
-    /* 설정 패널 */
+    /* 설정 */
     .settings-panel {
-      position: fixed; inset: 0;
-      background: #0f0f0f;
-      z-index: 50;
-      display: flex; flex-direction: column;
-      padding: 24px 20px;
-      gap: 20px;
+      position: fixed; inset: 0; background: #0f0f0f; z-index: 50;
+      display: flex; flex-direction: column; padding: 24px 20px; gap: 20px;
       max-width: 480px; margin: 0 auto;
-      transform: translateY(100%);
-      transition: transform 0.3s ease;
+      transform: translateY(100%); transition: transform 0.3s ease;
     }
     .settings-panel.open { transform: translateY(0); }
     .settings-panel h2 { font-size: 18px; color: #a78bfa; }
     .settings-panel label { font-size: 12px; color: #888; display: block; margin-bottom: 6px; }
     .settings-panel input {
-      width: 100%; padding: 12px;
-      background: #1a1a1a; border: 1px solid #333;
+      width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333;
       border-radius: 10px; color: #fff; font-size: 14px; outline: none;
     }
     .settings-panel input:focus { border-color: #7c3aed; }
-    .settings-panel .hint {
-      font-size: 12px; color: #555; line-height: 1.6;
-      background: #111; border-radius: 10px; padding: 12px;
-    }
-    .settings-panel .hint code {
-      color: #a78bfa; font-family: monospace; font-size: 12px;
-    }
+    .token-group { display: flex; flex-direction: column; gap: 6px; }
+    .token-label { font-size: 12px; color: #888; }
+    .token-input { letter-spacing: 4px; font-size: 22px; text-align: center; font-weight: 700; }
+    .hint { font-size: 12px; color: #555; line-height: 1.7; background: #111; border-radius: 10px; padding: 12px; }
+    .hint code { color: #a78bfa; font-family: monospace; }
     .close-btn {
       padding: 14px; border-radius: 12px; border: none;
-      background: #1a1a1a; color: #fff; font-size: 15px; cursor: pointer;
-      margin-top: auto;
+      background: #1a1a1a; color: #fff; font-size: 15px; cursor: pointer; margin-top: auto;
     }
-    .status-dot {
-      display: inline-block; width: 8px; height: 8px;
-      border-radius: 50%; background: #333;
-      margin-right: 6px; vertical-align: middle;
-    }
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #333; margin-right: 6px; }
     .status-dot.ok { background: #39ff14; box-shadow: 0 0 6px #39ff14; }
     .status-dot.err { background: #ef4444; }
-    .test-btn {
-      padding: 10px; border-radius: 10px; border: 1px solid #333;
-      background: none; color: #888; font-size: 13px; cursor: pointer;
-    }
+    .test-btn { padding: 10px; border-radius: 10px; border: 1px solid #333; background: none; color: #888; font-size: 13px; cursor: pointer; }
   </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="logo">🌱 씨앗<span>노트</span></div>
-  <button class="settings-btn" onclick="openSettings()">⚙️</button>
+  <div class="logo">🌱 씨앗<span>노트</span> <span style="font-size:11px;color:#555;font-weight:400">v3</span></div>
+  <button class="icon-btn" onclick="openSettings()">⚙️</button>
 </div>
 
-<div class="main">
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('write', this)">🌱 물주기</button>
+  <button class="tab" onclick="switchTab('history', this)">🌿 새싹</button>
+</div>
+
+<!-- 입력 패널 -->
+<div class="panel active" id="panel-write">
   <textarea id="textInput" placeholder="생각을 적거나 마이크를 눌러 말해보세요..."></textarea>
+
+  <!-- 저장+Gemini 결과 -->
+  <div class="result-card" id="resultCard">
+    <div class="result-saved">
+      <div class="label">✓ 옵시디언에 저장됐어요</div>
+      <div class="content" id="resultText"></div>
+    </div>
+    <div class="result-gemini" id="resultGemini">
+      <div class="g-label">💭 Gemini 생각 확장 <span id="gSpinner">...</span></div>
+      <div class="g-text" id="geminiText"></div>
+    </div>
+  </div>
+
   <div class="actions">
     <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤</button>
     <button class="save-btn" id="saveBtn" onclick="saveNote()" disabled>저장</button>
   </div>
 </div>
 
+<!-- 기록 패널 -->
+<div class="panel" id="panel-history">
+  <div class="history-empty" id="historyEmpty">기록을 불러오는 중...</div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<!-- 설정 패널 -->
+<!-- 상세 모달 -->
+<div class="detail-modal" id="detailModal" onclick="closeDetail(event)">
+  <div class="d-card" id="detailCard">
+    <div class="d-file" id="detailFile"></div>
+    <div class="d-title" id="detailTitle"></div>
+    <div class="d-body" id="detailBody"></div>
+    <div class="d-gemini" id="detailGemini" style="display:none">
+      <div class="d-gemini-label">💭 Gemini 생각 확장</div>
+      <div class="d-gemini-text" id="detailGeminiText"></div>
+    </div>
+    <button class="d-close" onclick="closeDetail()">닫기</button>
+  </div>
+</div>
+
+<!-- 설정 -->
 <div class="settings-panel" id="settingsPanel">
   <h2>⚙️ 설정</h2>
-
-  <div>
-    <label>서버 주소 (Webhook URL)</label>
-    <input type="url" id="webhookUrl" placeholder="http://192.168.x.x:3456" />
+  <div class="token-group">
+    <div class="token-label">연결 토큰 — 서버 터미널에 표시된 6자리</div>
+    <input class="token-input" type="text" id="tokenInput" placeholder="a3f8k2" maxlength="6" />
   </div>
-
   <div>
     <span class="status-dot" id="statusDot"></span>
     <span id="statusText" style="font-size:13px;color:#555;">연결 안 됨</span>
     <button class="test-btn" onclick="testConnection()" style="float:right">연결 테스트</button>
   </div>
-
   <div class="hint">
-    <b style="color:#39ff14">✅ 집·사무실 (폰·컴퓨터 같은 와이파이)</b><br>
-    <code>http://192.168.x.x:3456</code><br>
-    <span style="font-size:11px;color:#555">IP 확인 — Mac: ipconfig getifaddr en0</span><br><br>
-    <b style="color:#a78bfa">✅ 밖·데이터 (SKT·KT·LG 어디서든)</b><br>
-    <code>https://xxxx.trycloudflare.com</code><br>
-    <span style="font-size:11px;color:#555">컴퓨터에서: cloudflared tunnel --url http://localhost:3456</span><br><br>
-    <b style="color:#f59e0b">💡 모르겠으면 trycloudflare 주소를 쓰세요</b><br>
-    <span style="font-size:11px;color:#555">단, 서버 껐다 켜면 주소가 바뀌어요</span>
+    토큰 입력 후 자동 저장.<br>
+    집 와이파이 → 자동 직접 연결.<br>
+    밖·데이터·공공 와이파이 → 릴레이 경유 자동 연결.<br><br>
+    <b style="color:#f59e0b">토큰 확인:</b> 서버 터미널 상단에 표시됨.<br>
+    <b style="color:#f59e0b">외부 등록:</b> cloudflared 실행 후<br>
+    <code>node register.js https://xxxx.trycloudflare.com</code>
   </div>
-
   <button class="close-btn" onclick="closeSettings()">닫기</button>
 </div>
 
 <script>
   const textInput = document.getElementById("textInput");
   const saveBtn = document.getElementById("saveBtn");
-  const voiceBtn = document.getElementById("voiceBtn");
 
-  // 입력값 있으면 저장 버튼 활성화
+  let userToken = localStorage.getItem("seednote-token") || "";
+
   textInput.addEventListener("input", () => {
     saveBtn.disabled = !textInput.value.trim();
+    document.getElementById("resultCard").classList.remove("show");
   });
 
-  // ── 설정 ──────────────────────────────
-  let webhookUrl = localStorage.getItem("seednote-webhook") || "";
-
-  function openSettings() {
-    document.getElementById("webhookUrl").value = webhookUrl;
-    document.getElementById("settingsPanel").classList.add("open");
-  }
-  function closeSettings() {
-    webhookUrl = document.getElementById("webhookUrl").value.trim().replace(/\/$/, "");
-    if (webhookUrl) localStorage.setItem("seednote-webhook", webhookUrl);
-    document.getElementById("settingsPanel").classList.remove("open");
+  function switchTab(name, btn) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("panel-" + name).classList.add("active");
+    if (name === "history") loadHistory();
   }
 
-  async function testConnection() {
-    const url = document.getElementById("webhookUrl").value.trim().replace(/\/$/, "");
-    const dot = document.getElementById("statusDot");
-    const txt = document.getElementById("statusText");
-    txt.textContent = "확인 중..."; dot.className = "status-dot";
-    try {
-      const res = await fetch(url + "/ping", { signal: AbortSignal.timeout(4000) });
-      const data = await res.json();
-      if (data.ok) {
-        dot.className = "status-dot ok";
-        txt.textContent = "연결 성공 ✓";
-      } else throw new Error();
-    } catch {
-      dot.className = "status-dot err";
-      txt.textContent = "연결 실패 — 서버 주소 확인";
+  // WebRTC로 로컬 IP 자동 감지
+  async function getLocalIP() {
+    return new Promise((resolve) => {
+      try {
+        const pc = new RTCPeerConnection({ iceServers: [] });
+        pc.createDataChannel("");
+        pc.createOffer().then(o => pc.setLocalDescription(o));
+        pc.onicecandidate = e => {
+          if (!e.candidate) return;
+          const m = e.candidate.candidate.match(/(\d+\.\d+\.\d+\.\d+)/);
+          if (m && !m[1].startsWith("127.")) { resolve(m[1]); pc.close(); }
+        };
+        setTimeout(() => resolve(null), 1200);
+      } catch { resolve(null); }
+    });
+  }
+
+  // 1단계: 같은 와이파이 직접 연결 / 2단계: 릴레이 경유
+  async function resolveServer() {
+    const localIP = await getLocalIP();
+    if (localIP) {
+      try {
+        const r = await fetch(`http://${localIP}:3456/ping`,
+          { signal: AbortSignal.timeout(2000) });
+        if ((await r.json()).ok) return `http://${localIP}:3456`;
+      } catch {}
     }
+    if (userToken) {
+      try {
+        const r = await fetch(
+          `https://seednote-relay.vercel.app/api/url?token=${userToken}`);
+        const d = await r.json();
+        if (d.url) return d.url;
+      } catch {}
+    }
+    return null;
   }
 
-  // ── 저장 ──────────────────────────────
   async function saveNote() {
     const text = textInput.value.trim();
     if (!text) return;
-    if (!webhookUrl) { showToast("설정에서 서버 주소를 입력해주세요.", "error"); openSettings(); return; }
 
     saveBtn.disabled = true;
+    saveBtn.textContent = "연결 중...";
+
+    const server = await resolveServer();
+    if (!server) {
+      saveBtn.textContent = "저장";
+      saveBtn.disabled = false;
+      showToast("설정에서 서버 주소를 입력하세요.", "error");
+      openSettings();
+      return;
+    }
+
     saveBtn.textContent = "저장 중...";
+    document.getElementById("resultText").textContent = text.slice(0, 100) + (text.length > 100 ? "…" : "");
+    document.getElementById("geminiText").textContent = "";
+    document.getElementById("gSpinner").textContent = "생각 중...";
+    document.getElementById("resultCard").classList.add("show");
 
     try {
-      const res = await fetch(webhookUrl + "/save", {
+      const res = await fetch(server + "/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(30000),
       });
       const data = await res.json();
       if (data.ok) {
-        showToast("옵시디언에 저장됐어요 ✓", "success");
         textInput.value = "";
         saveBtn.disabled = true;
+        if (data.gemini) {
+          document.getElementById("gSpinner").textContent = "";
+          document.getElementById("geminiText").textContent = data.gemini;
+        } else {
+          document.getElementById("gSpinner").textContent = "";
+          document.getElementById("geminiText").textContent = "Gemini 응답 없음 — .env에 GEMINI_API_KEY를 설정하세요.";
+          document.getElementById("geminiText").style.color = "#444";
+        }
       } else {
+        document.getElementById("resultCard").classList.remove("show");
         showToast(data.error || "저장 실패", "error");
       }
     } catch {
+      document.getElementById("resultCard").classList.remove("show");
       showToast("서버에 연결할 수 없어요.", "error");
     } finally {
       saveBtn.textContent = "저장";
@@ -292,59 +364,131 @@
     }
   }
 
-  // ── 음성 입력 ─────────────────────────
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let recognition = null;
-  let isListening = false;
+  async function loadHistory() {
+    const container = document.getElementById("panel-history");
+    const empty = document.getElementById("historyEmpty");
+    const server = await resolveServer();
+    if (!server) { empty.textContent = "설정에서 서버 주소를 먼저 입력하세요."; return; }
+    empty.textContent = "기록을 불러오는 중...";
+    container.querySelectorAll(".history-item").forEach(el => el.remove());
+    try {
+      const res = await fetch(server + "/history", { signal: AbortSignal.timeout(5000) });
+      const data = await res.json();
+      if (!data.ok || !data.items.length) { empty.textContent = "아직 저장된 기록이 없어요."; return; }
+      empty.style.display = "none";
+      data.items.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.innerHTML = `
+          <div class="h-title">${item.title}</div>
+          <div class="h-body">${item.body}</div>
+          ${item.gemini ? `<div class="h-gemini">💭 ${item.gemini}</div>` : ""}
+          <div class="h-file">${item.filename}</div>`;
+        div.addEventListener("click", () => openDetail(item));
+        container.appendChild(div);
+      });
+    } catch {
+      empty.textContent = "기록을 불러오지 못했어요.";
+    }
+  }
 
+  function openDetail(item) {
+    document.getElementById("detailFile").textContent = item.filename;
+    document.getElementById("detailTitle").textContent = item.title;
+    document.getElementById("detailBody").textContent = item.body;
+    const geminiEl = document.getElementById("detailGemini");
+    if (item.gemini) {
+      document.getElementById("detailGeminiText").textContent = item.gemini;
+      geminiEl.style.display = "block";
+    } else {
+      geminiEl.style.display = "none";
+    }
+    document.getElementById("detailModal").classList.add("open");
+  }
+
+  function closeDetail(e) {
+    if (e && e.target !== document.getElementById("detailModal")) return;
+    document.getElementById("detailModal").classList.remove("open");
+  }
+
+  function openSettings() {
+    document.getElementById("tokenInput").value = userToken;
+    document.getElementById("settingsPanel").classList.add("open");
+  }
+  function closeSettings() {
+    document.getElementById("settingsPanel").classList.remove("open");
+  }
+
+  document.getElementById("tokenInput").addEventListener("input", e => {
+    userToken = e.target.value.trim().toLowerCase();
+    localStorage.setItem("seednote-token", userToken);
+  });
+
+  async function testConnection() {
+    const dot = document.getElementById("statusDot");
+    const txt = document.getElementById("statusText");
+    txt.textContent = "확인 중..."; dot.className = "status-dot";
+
+    const server = await resolveServer();
+    if (!server) {
+      dot.className = "status-dot err";
+      txt.textContent = "연결 실패 — 토큰 확인";
+      return;
+    }
+    try {
+      const res = await fetch(server + "/ping", { signal: AbortSignal.timeout(5000) });
+      const d = await res.json();
+      if (d.ok) {
+        dot.className = "status-dot ok";
+        const via = server.includes("trycloudflare") || server.includes("vercel") ? "릴레이" : "와이파이";
+        txt.textContent = `${via} 연결 ✓${d.gemini ? " · Gemini ✓" : ""}`;
+        return;
+      }
+    } catch {}
+    dot.className = "status-dot err";
+    txt.textContent = "연결 실패";
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null, isListening = false;
   if (SR) {
     recognition = new SR();
-    recognition.lang = "ko-KR";
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.lang = "ko-KR"; recognition.continuous = false; recognition.interimResults = false;
     recognition.onresult = (e) => {
-      const transcript = e.results[0][0].transcript;
-      textInput.value = textInput.value ? textInput.value + " " + transcript : transcript;
-      saveBtn.disabled = !textInput.value.trim();
-      setListening(false);
+      const t = e.results[0][0].transcript;
+      textInput.value = textInput.value ? textInput.value + " " + t : t;
+      saveBtn.disabled = false; setListening(false);
     };
     recognition.onerror = () => setListening(false);
     recognition.onend = () => setListening(false);
   } else {
-    voiceBtn.style.opacity = "0.3";
-    voiceBtn.title = "이 브라우저는 음성 인식을 지원하지 않습니다";
+    document.getElementById("voiceBtn").style.opacity = "0.3";
   }
-
   function toggleVoice() {
     if (!recognition) return;
     if (isListening) { recognition.stop(); setListening(false); }
     else { recognition.start(); setListening(true); }
   }
-
   function setListening(v) {
     isListening = v;
-    voiceBtn.className = "voice-btn" + (v ? " listening" : "");
-    voiceBtn.textContent = v ? "⏹" : "🎤";
+    const btn = document.getElementById("voiceBtn");
+    btn.className = "voice-btn" + (v ? " listening" : "");
+    btn.textContent = v ? "⏹" : "🎤";
   }
 
-  // ── 토스트 ────────────────────────────
   let toastTimer;
   function showToast(msg, type = "") {
     const el = document.getElementById("toast");
-    el.textContent = msg;
-    el.className = "toast show " + type;
+    el.textContent = msg; el.className = "toast show " + type;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => { el.className = "toast"; }, 2800);
   }
 
-  // 엔터키로 저장 (Shift+Enter는 줄바꿈)
   textInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey && window.innerWidth > 600) {
-      e.preventDefault();
-      if (!saveBtn.disabled) saveNote();
+      e.preventDefault(); if (!saveBtn.disabled) saveNote();
     }
   });
 </script>
-
 </body>
 </html>
